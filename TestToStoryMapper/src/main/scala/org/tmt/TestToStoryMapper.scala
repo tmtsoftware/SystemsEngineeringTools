@@ -114,12 +114,12 @@ object TestToStoryMapper extends App {
   def testFilenames(rootDir: String): Array[String] = {
     recursiveListFiles(new File(rootDir))
       .filter(_.isFile)
-      .map(x => x.getAbsolutePath)
+      .map(x => x.getCanonicalPath)
       .filter(_.contains("/test/"))
       .filter(!_.contains("/resources/"))
   }
 
-  val testFiles = testFilenames("/Users/weiss/tmtsoftware/csw-prod/")
+  val testFiles = testFilenames("../csw-prod/")
 
 
   testFiles.filter(_.endsWith(".scala")).foreach(processScalaFile)
