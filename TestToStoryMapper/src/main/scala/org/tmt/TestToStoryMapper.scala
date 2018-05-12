@@ -3,6 +3,8 @@ package org.tmt
 import scala.io.Source
 import scala.collection.immutable.{ListMap, Set}
 import java.io.{File, PrintWriter}
+import scala.collection.JavaConverters._
+
 // rules:
 //
 // if USR (user story reference) comes before class, USR applies to all tests.
@@ -21,6 +23,7 @@ object TestToStoryMapper extends App {
   var rootDir = "."
   val delim="\t"
   val header=s"path${delim}lineNumber${delim}githubLink${delim}className${delim}testName${delim}userStories"
+  val sheets = new SheetsAccess()
 
   if (args.length == 0) {
     // return error
@@ -69,6 +72,10 @@ object TestToStoryMapper extends App {
     writer.close()
   }
 
+  def makeData() = {
+    testMap.toList.map(item => List(item._1.file.relativePath, item._1.lineNumber, getGithubLink(item._1), item._1.className, item._1.testName, s"[${item._2.map(_.reference).mkString(",")}]"))
+  }
+
   def openCSV(file: File) = {
     val source = Source.fromFile(file)
     for (line <- source.getLines()) {
@@ -103,6 +110,34 @@ object TestToStoryMapper extends App {
   }
 
 
+  def getDataFromSheets() = {
+    val values = sheets.getAllData()
+    for (javarow <- values.asScala) {
+      val row = javarow.asScala
+      if (row.mkString(delim) != header) {
+        val parts = row.map(_.toString)
+        val file = new File(s"$rootDir${File.separator}${parts.head}")
+        val testFile = TestFile(parts.head, file.getCanonicalPath)
+        val testRef = TestReference(testFile,
+          parts(3),
+          parts(4),
+          parts(1).toInt)
+
+        val userStories = {
+          if (parts(5).contains("[]"))
+            Set[UserStoryReference]()
+          else
+            parts(5)
+              .replace("[", "")
+              .replace("]", "")
+              .split(",")
+              .map(UserStoryReference)
+              .toSet
+        }
+        addToMap(Some(testRef), userStories)
+      }
+    }
+  }
 
 
   def testEnd(x:Char) = {
@@ -198,13 +233,17 @@ object TestToStoryMapper extends App {
     source.close
   }
 
-  openCSV(new File("/Users/Weiss/acceptTest/in.txt"))
-//  testFiles.filter(_.filename.endsWith(".scala")).foreach(processScalaFile)
-//  testFiles.filter(_.filename.endsWith(".java")).foreach(processJavaFile)
+  getDataFromSheets()
+//  openCSV(new File("/Users/Weiss/acceptTest/in.txt"))
+  testFiles.filter(_.filename.endsWith(".scala")).foreach(processScalaFile)
+  testFiles.filter(_.filename.endsWith(".java")).foreach(processJavaFile)
 
   printMap()
 
-  dumpCSV( new File("/Users/Weiss/acceptTest/test.csv"))
+  sheets.clearData()
+  sheets.writeData(makeData)
+
+//  dumpCSV( new File("/Users/Weiss/acceptTest/test.csv"))
 
   val inverseMap = testMap.toList.flatMap{ case (a,b) => b.map(_ -> a) }.groupBy(_._1).mapValues(_.map(_._2))
 
