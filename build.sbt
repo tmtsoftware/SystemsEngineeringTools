@@ -7,6 +7,8 @@ lazy val `TestToStoryMapper` = project
     libraryDependencies ++= Seq(
       Dependencies.`google-api-client`,
       Dependencies.`google-oauth-client`,
-      Dependencies.`google-sheets-client`
+      Dependencies.`google-sheets-client`,
+      Dependencies.`scalatest`,
+      Dependencies.`scalatest-test`
     )
   )
