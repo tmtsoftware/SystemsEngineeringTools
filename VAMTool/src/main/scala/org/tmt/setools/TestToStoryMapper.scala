@@ -3,7 +3,9 @@ package org.tmt.setools
 import scala.io.Source
 import scala.collection.immutable.{ListMap, Set}
 import java.io.{File, PrintWriter}
+
 import scala.collection.JavaConverters._
+import org.tmt.setools.utilities.{TestFile, TestReference, UserStoryReference}
 
 // rules:
 //
@@ -11,9 +13,6 @@ import scala.collection.JavaConverters._
 // if USR just above test (no lines between USR and test declaration), only applies to that test
 // if USR is within a test, it only applies to that test.
 
-case class TestFile(relativePath: String, filename: String)
-case class UserStoryReference(reference: String)
-case class TestReference(file: TestFile, packageName: String, className: String, testName: String, lineNumber: Int)
 
 // TODO add URL to github for test (at line number if possible)
 // TODO csw.services.config.server.ConfigServerTest is an abstract class. does this need special handling?

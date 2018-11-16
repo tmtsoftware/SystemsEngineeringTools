@@ -1,7 +1,7 @@
 import sbt._
 import Settings._
 
-lazy val `TestToStoryMapper` = project
+lazy val `VAMTools` = project
   .settings(defaultSettings: _*)
   .settings(
     libraryDependencies ++= Seq(

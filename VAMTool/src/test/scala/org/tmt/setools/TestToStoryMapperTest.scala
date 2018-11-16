@@ -3,12 +3,15 @@ package org.tmt.setools
 import java.io.File
 
 import org.scalatest.{FunSuite, Matchers}
+import org.tmt.setools.utilities.TestFile
 
 class TestToStoryMapperTest extends FunSuite with Matchers {
 
   test("should parse scala file") {
     val mapper = new TestToStoryMapper("",".")
-    mapper.processScalaFile(new TestFile("./TestToStoryMapper/src/test/scala/org/tmt/setools", "TestToStoryMapper/src/test/scala/org/tmt/setools/TestFile01.scala"))
+    val f = new File(".");
+    println(f.getAbsolutePath)
+    mapper.processScalaFile(new TestFile("./src/test/scala/org/tmt/setools", "src/test/scala/org/tmt/setools/TestFile01.scala"))
     mapper.printMap()
   }
 

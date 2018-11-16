@@ -2,14 +2,17 @@ package org.tmt.setools
 
 import java.io.File
 
+import org.tmt.setools.utilities.UserStoryReference
+
 object VAMTool extends App {
 
+  val allRequirements = VCRMParser.getRequirements()
+
   val testResultsPath = "/Users/weiss/acceptTest/fakeTestResults.csv"
-  val verificationMatrixParser = new VerificationMatrixParser()
   val testResultParser = new TestResultParser()
   val testToStoryMapper = new TestToStoryMapper("csw", "/Users/weiss/tmtsoftware")
 
-  val reqToStoryMap = verificationMatrixParser.createMap()
+  val reqToStoryMap = VerificationMatrixParser.createMap()
 
   val storyToTestMap = testToStoryMapper.createStoryToTestMap()
   testToStoryMapper.printSortedStoryToTestStringMap(storyToTestMap)

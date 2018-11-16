@@ -19,18 +19,18 @@ import scala.collection.mutable
 /* https://developers.google.com/sheets/api/quickstart/java */
 class SheetsAccess {
 
-  val APPLICATION_NAME = "Sheets Access Demo"
-  val JSON_FACTORY = JacksonFactory.getDefaultInstance
-  val CREDENTIALS_FOLDER = "credentials"
+  private val APPLICATION_NAME = "Sheets Access Demo"
+  private val JSON_FACTORY = JacksonFactory.getDefaultInstance
+  private val CREDENTIALS_FOLDER = "credentials"
 
-  val HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport()
+  private val HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport()
 
   /**
     * Global instance of the scopes required by this quickstart.
     * If modifying these scopes, delete your previously saved credentials/ folder.
     */
-  val SCOPES = List(SheetsScopes.SPREADSHEETS).asJava
-  val CLIENT_SECRET_DIR = "/client_id.json"
+  private val SCOPES = List(SheetsScopes.SPREADSHEETS).asJava
+  private val CLIENT_SECRET_DIR = "/client_id.json"
 
 
   /**
