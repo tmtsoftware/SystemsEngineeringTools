@@ -10,7 +10,12 @@ class TestResultParserTest extends FunSuite with Matchers {
   test("should read csv file") {
     val inFile = new File("/Users/weiss/acceptTest/testResults.csv")
 
-    parser.parseCSV(inFile).toList.map(println)
+    parser.parseCSV(inFile).toList.foreach(println)
+
+  }
+
+  test("should get map from github") {
+    parser.getResultMapFromGithub.toList.foreach(println)
 
   }
 

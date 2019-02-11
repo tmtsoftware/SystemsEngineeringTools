@@ -16,6 +16,7 @@ import org.tmt.setools.utilities.{TestFile, TestReference, UserStoryReference}
 
 // TODO add URL to github for test (at line number if possible)
 // TODO csw.services.config.server.ConfigServerTest is an abstract class. does this need special handling?
+// TODO /Users/weiss/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
 
 class TestToStoryMapper(project: String, rootDir: String)  {
   val githubPath = "https://github.com/tmtsoftware"
@@ -31,13 +32,11 @@ class TestToStoryMapper(project: String, rootDir: String)  {
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-  val testFiles = {
+  private val testFiles = {
     recursiveListFiles(new File(rootDir+File.separator+project))
       .filter(_.isFile)
       .map(x => TestFile(x.toString.drop(rootDir.length+File.separator.length+project.length+File.separator.length), x.getCanonicalPath))
-      .filter(_.filename.contains("/test/"))
-      .filter(!_.filename.contains("/resources/"))
-      .filter(!_.filename.contains("/target/"))
+      .filter(f => f.filename.contains("/test/scala") || f.filename.contains("/test/scala") || f.filename.contains("/multi-jvm"))
   }
 
   def getReference(line:String) = UserStoryReference("DEOPSCSW-"+line.drop(line.indexOf("DEOPSCSW")+9).takeWhile(testEnd))
@@ -259,7 +258,7 @@ class TestToStoryMapper(project: String, rootDir: String)  {
   def createStoryToTestMap() = {
     updateMapFromSheets()
     val tempMap = testMap.toList.flatMap { case (a, b) => b.map(_ -> a) }.groupBy(_._1).mapValues(_.map(_._2))
-    tempMap.map { case (a,b) => (a -> b.map(ref => ref.packageName+"."+ref.className+"."+ref.testName))}
+    tempMap.map { case (a,b) => a -> b.map(ref => ref.packageName+"."+ref.className+"."+ref.testName) }
   }
   def printSortedStoryToTestMap(storyToTestMap: Map[UserStoryReference, List[TestReference]]) = {
     for ((t, s) <- storyToTestMap.toSeq.sortBy(_._1.reference.drop(9).toInt)) {

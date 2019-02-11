@@ -1,7 +1,7 @@
 import sbt._
 import Settings._
 
-lazy val `VAMTools` = project
+lazy val `VAMTool` = project
   .settings(defaultSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
@@ -9,6 +9,10 @@ lazy val `VAMTools` = project
       Dependencies.`google-oauth-client`,
       Dependencies.`google-sheets-client`,
       Dependencies.`scalatest`,
-      Dependencies.`scalatest-test`
+      Dependencies.`scalatest-test`,
+      Dependencies.Akka.`akka-actor`,
+      Dependencies.Akka.`akka-stream`,
+      Dependencies.AkkaHttp.`akka-http`,
+      Dependencies.AkkaHttp.`spray-json`
     )
   )

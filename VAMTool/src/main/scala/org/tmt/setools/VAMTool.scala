@@ -8,7 +8,7 @@ object VAMTool extends App {
 
   val allRequirements = VCRMParser.getRequirements()
 
-  val testResultsPath = "/Users/weiss/acceptTest/fakeTestResults.csv"
+  val testResultsPath = "/Users/weiss/acceptTest/20190123_testReport.tsv"
   val testResultParser = new TestResultParser()
   val testToStoryMapper = new TestToStoryMapper("csw", "/Users/weiss/tmtsoftware")
 

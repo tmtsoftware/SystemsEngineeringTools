@@ -9,9 +9,9 @@ class TestToStoryMapperTest extends FunSuite with Matchers {
 
   test("should parse scala file") {
     val mapper = new TestToStoryMapper("",".")
-    val f = new File(".");
+    val f = new File(".")
     println(f.getAbsolutePath)
-    mapper.processScalaFile(new TestFile("./src/test/scala/org/tmt/setools", "src/test/scala/org/tmt/setools/TestFile01.scala"))
+    mapper.processScalaFile(TestFile("./src/test/scala/org/tmt/setools", "src/test/scala/org/tmt/setools/TestFile01.scala"))
     mapper.printMap()
   }
 
