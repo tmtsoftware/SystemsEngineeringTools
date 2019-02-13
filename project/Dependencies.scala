@@ -13,6 +13,7 @@ object Dependencies {
   lazy val `google-sheets-client` = "com.google.apis" % "google-api-services-sheets" % "v4-rev516-1.23.0"
   val `scalatest` = "org.scalactic" %% "scalactic" % "3.0.5"
   val `scalatest-test` = "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+  val `junit`              = "junit" % "junit" % "4.12" //Eclipse Public License 1.0
 
   object Akka {
     val Version                    = "2.5.13" //all akka is Apache License 2.0

@@ -13,6 +13,7 @@ lazy val `VAMTool` = project
       Dependencies.Akka.`akka-actor`,
       Dependencies.Akka.`akka-stream`,
       Dependencies.AkkaHttp.`akka-http`,
-      Dependencies.AkkaHttp.`spray-json`
+      Dependencies.AkkaHttp.`spray-json`,
+      Dependencies.`junit`
     )
   )
