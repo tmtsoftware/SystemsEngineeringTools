@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.LOCAL_VARIABLE})
 public @interface StoryId {
-        public String[] value();
+        String[] value();
 }
 
 
