@@ -5,10 +5,11 @@ import java.io.File
 import org.scalatest.{FunSuite, Matchers}
 
 class TestResultParserTest extends FunSuite with Matchers {
+  val HOME = System.getProperty("user.home")
   val parser = new TestResultParser()
 
   test("should read csv file") {
-    val inFile = new File("/Users/weiss/acceptTest/testResults.csv")
+    val inFile = new File(s"$HOME/acceptTest/testResults.csv")
 
     parser.parseCSV(inFile).toList.foreach(println)
 

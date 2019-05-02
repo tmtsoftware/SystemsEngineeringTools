@@ -16,7 +16,7 @@ import org.tmt.setools.utilities.{TestFile, TestReference, UserStoryReference}
 
 // TODO add URL to github for test (at line number if possible)
 // TODO csw.services.config.server.ConfigServerTest is an abstract class. does this need special handling?
-// TODO /Users/weiss/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
+// TODO $HOME/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
 
 class TestToStoryMapper(project: String, rootDir: String)  {
   val githubPath = "https://github.com/tmtsoftware"
@@ -240,7 +240,7 @@ class TestToStoryMapper(project: String, rootDir: String)  {
 
   def updateMapFromSheets() = {
     //getDataFromSheets()
-    //  openCSV(new File("/Users/Weiss/acceptTest/in.txt"))
+    //  openCSV(new File(s"$HOME/acceptTest/in.txt"))
     testFiles.filter(_.filename.endsWith(".scala")).foreach(processScalaFile)
     testFiles.filter(_.filename.endsWith(".java")).foreach(processJavaFile)
   }
@@ -253,7 +253,7 @@ class TestToStoryMapper(project: String, rootDir: String)  {
     sheets.clearData(spreadsheetId, range)
     sheets.writeData(spreadsheetId, range, makeSheetsData())
   }
-//  dumpCSV( new File("/Users/Weiss/acceptTest/test.csv"))
+//  dumpCSV( new File(s"$HOME/acceptTest/test.csv"))
 
   def createStoryToTestMap() = {
     updateMapFromSheets()

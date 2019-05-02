@@ -6,6 +6,7 @@ import org.scalatest.{FunSuite, Matchers}
 import org.tmt.setools.utilities.TestFile
 
 class TestToStoryMapperTest extends FunSuite with Matchers {
+  val HOME = System.getProperty("user.home")
 
   test("should parse scala file") {
     val mapper = new TestToStoryMapper("",".")
@@ -16,7 +17,7 @@ class TestToStoryMapperTest extends FunSuite with Matchers {
   }
 
   test("should print tests") {
-    val mapper = new TestToStoryMapper("csw","/Users/weiss/tmtsoftware")
+    val mapper = new TestToStoryMapper("csw",s"$HOME/tmtsoftware")
     mapper.updateMapFromSheets()
     mapper.testMap.foreach {kv =>
       val t = kv._1
