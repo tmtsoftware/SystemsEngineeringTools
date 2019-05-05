@@ -11,15 +11,13 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
-import scala.collection.mutable
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration._
 import scala.io.Source
 
-class TestResultParser {
-  val delim="\t"
+object TestResultParser {
+  val delim = "\t"
   val header = s"class$delim title$delim duration (ms)$delim status"
 
   val baseGitUri = "https://api.github.com/repos/tmtsoftware/csw-acceptance/contents/results/"
@@ -29,19 +27,17 @@ class TestResultParser {
 
 
   def parseCSV(file: File): Map[String, Boolean] = {
-    val testResultMap = mutable.HashMap[String, Boolean]()
     val source = Source.fromFile(file)
-    for (line <- source.getLines()) {
-      if (line.startsWith("csw.")) {
-
-        val parts = line.split(delim)
-
-        testResultMap.update(parts(0)+"."+parts(1), parts(2).equalsIgnoreCase("PASSED"))
-      }
+    try {
+      source
+        .getLines
+        .filter(_.startsWith("csw."))
+        .map(_.split(delim))
+        .map(parts => parts(0) + "." + parts(1) -> parts(2).equalsIgnoreCase("PASSED"))
+        .toMap
+    } finally {
+      source.close()
     }
-    source.close()
-
-    testResultMap.toMap
   }
 
   def print(map: Map[String, Boolean]): Unit = {
@@ -76,7 +72,7 @@ class TestResultParser {
       .toMap
   }
 
-  private def lastReportUri =  {
+  private def lastReportUri = {
     // TODO determine from Git, last file
     val file = "20190117_151834_csw_acceptance_results.tsv"
     baseGitUri + file
@@ -85,9 +81,11 @@ class TestResultParser {
   private def trimQuotes(s: String) = {
     s.dropWhile(c => c == '\"').takeWhile(c => c != '\"')
   }
+
   private def getReportFromGithub(uri: String) = Http(system).singleRequest(HttpRequest(HttpMethods.GET, uri))
 
 
   private def base64ToString(message: String) = Base64.getDecoder.decode(message).map(_.toChar).mkString
+
   private def stringToBase64(message: String) = Base64.getEncoder.encodeToString(message.getBytes(StandardCharsets.UTF_8))
 }

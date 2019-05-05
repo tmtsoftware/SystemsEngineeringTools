@@ -3,6 +3,7 @@ import Settings._
 import Dependencies._
 
 lazy val `VAMTool` = project
+  .enablePlugins(DeployApp)
   .settings(defaultSettings: _*)
   .settings(
     libraryDependencies ++= Seq(

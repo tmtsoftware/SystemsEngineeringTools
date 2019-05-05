@@ -1,43 +1,39 @@
 package org.tmt.setools
 
-import scala.collection.mutable
-
 object VerificationMatrixParser {
 
   private val reqPattern = "\\[.*?\\]".r
   private val reqColumn = 7
   private val storyColumn = 9
   private val validRowSize = 10
+  private val sheetIds = List("Configuration Service - User St", "Logging Service - User Stories")
 
   // https://docs.google.com/spreadsheets/d/1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc
-  def createMap(spreadsheetId: String = "1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc"): mutable.HashMap[String, Set[String]] = {
-    val reqToStoryMap = mutable.HashMap[String, Set[String]]()
-    val sheets = new SheetsAccess()
-    val sheetIds = List("Configuration Service - User St", "Logging Service - User Stories")
+  def createMap(spreadsheetId: String = "1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc"): Map[String, Set[String]] = {
+    var reqToStoryMap = Map[String, Set[String]]()
 
     sheetIds.foreach { sheet =>
-      val data = sheets.getAllDataScala(spreadsheetId, sheet)
-      data.foreach { row =>
-        if (row.size == validRowSize) {
+      val data = SheetsAccess.getAllData(spreadsheetId, sheet)
+      data
+        .filter(_.size == validRowSize)
+        .foreach { row =>
           val reqStrings = row(7).toString.split("\n")
           val reqs = reqStrings.map(s => reqPattern.findFirstIn(s))
-
           val story = row(9).toString
-
-          if (!story.isEmpty) {
+          if (story.nonEmpty) {
             reqs.foreach { req =>
               req.foreach { r =>
                 if (reqToStoryMap.contains(r)) {
-                  reqToStoryMap.update(r, reqToStoryMap(r) + story)
+                  reqToStoryMap = reqToStoryMap + (r -> (reqToStoryMap(r) + story))
                 } else {
-                  reqToStoryMap.update(r, Set(story))
+                  reqToStoryMap = reqToStoryMap + (r -> Set(story))
                 }
               }
             }
           }
-        }
       }
     }
     reqToStoryMap
   }
+
 }
