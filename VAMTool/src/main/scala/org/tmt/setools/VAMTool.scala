@@ -6,13 +6,15 @@ import org.tmt.setools.Utilities.UserStoryReference
 
 object VAMTool extends App {
 
-  val allRequirements = VCRMParser.getRequirements()
-  val HOME = System.getProperty("user.home")
-
   // TODO: Make these paths configurable
+  val HOME = System.getProperty("user.home")
   val testResultsPath = s"$HOME/acceptTest/20190123_testReport.tsv"
   val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
 
+  // list of Requirements
+  val allRequirements = VCRMParser.getRequirements()
+
+  // map of requirement id to set of user story ids
   val reqToStoryMap = VerificationMatrixParser.createMap()
 
   val storyToTestMap = testToStoryMapper.createStoryToTestMap()

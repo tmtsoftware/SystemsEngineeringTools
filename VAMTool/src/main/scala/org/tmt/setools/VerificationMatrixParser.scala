@@ -1,7 +1,12 @@
 package org.tmt.setools
 
+/**
+  * Extracts data from a given google doc in the format of a "CSW Unit Test Verification Matrix".
+  * See example spreadsheetId below.
+  */
 object VerificationMatrixParser {
 
+  // Example input: https://docs.google.com/spreadsheets/d/1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc
   private val spreadsheetId = "1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc"
   private val reqPattern = "\\[.*?\\]".r
   private val storyPattern = "[A-Z0-9\\-]*".r
@@ -12,7 +17,10 @@ object VerificationMatrixParser {
   // TODO: Add other sheet ids
   private val sheetIds = List("Configuration Service - User St", "Logging Service - User Stories")
 
-  // https://docs.google.com/spreadsheets/d/1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc
+  /**
+    * Returns a map requirement id to set of user story ids.
+    * For example: Map("[REQ-2-CSW-3795]" -> Set("DEOPSCSW-145", "DEOPSCSW-146", "DEOPSCSW-147"), ...)
+    */
   def createMap(spreadsheetId: String = spreadsheetId): Map[String, Set[String]] = {
     var reqToStoryMap = Map[String, Set[String]]()
 

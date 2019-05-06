@@ -46,11 +46,14 @@ class TestToStoryMapper(project: String, rootDir: String) {
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
+
   private val testFiles = {
-    recursiveListFiles(new File(rootDir, project))
+    val projectDir = new File(rootDir, project)
+    val projectPath = projectDir.toPath
+    recursiveListFiles(projectDir)
       .filter(_.isFile)
-      .map(x => TestFile(x.toString.drop(rootDir.length + File.separator.length + project.length + File.separator.length), x.getCanonicalPath))
-      .filter(f => f.filename.contains("/test/scala") || f.filename.contains("/test/java") || f.filename.contains("/multi-jvm"))
+      .filter(f => f.getPath.contains("/test/scala") || f.getPath.contains("/test/java") || f.getPath.contains("/multi-jvm"))
+      .map(f => TestFile(projectPath.relativize(f.toPath).toString, f.getCanonicalPath))
   }
 
   def getReference(line: String) = UserStoryReference("DEOPSCSW-" + line.drop(line.indexOf("DEOPSCSW") + 9).takeWhile(testEnd))
