@@ -7,7 +7,7 @@ import java.io.{File, PrintWriter}
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse
 
 import scala.collection.JavaConverters._
-import org.tmt.setools.utilities.{TestFile, TestReference, UserStoryReference}
+import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 
 // rules:
 //

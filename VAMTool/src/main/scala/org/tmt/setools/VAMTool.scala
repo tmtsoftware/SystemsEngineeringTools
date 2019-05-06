@@ -2,13 +2,14 @@ package org.tmt.setools
 
 import java.io.File
 
-import org.tmt.setools.utilities.UserStoryReference
+import org.tmt.setools.Utilities.UserStoryReference
 
 object VAMTool extends App {
 
   val allRequirements = VCRMParser.getRequirements()
   val HOME = System.getProperty("user.home")
 
+  // TODO: Make these paths configurable
   val testResultsPath = s"$HOME/acceptTest/20190123_testReport.tsv"
   val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
 

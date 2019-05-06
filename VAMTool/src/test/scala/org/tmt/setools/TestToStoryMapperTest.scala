@@ -3,7 +3,7 @@ package org.tmt.setools
 import java.io.File
 
 import org.scalatest.{FunSuite, Matchers}
-import org.tmt.setools.utilities.{TestFile, TestReference, UserStoryReference}
+import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 
 import scala.collection.immutable.ListMap
 
