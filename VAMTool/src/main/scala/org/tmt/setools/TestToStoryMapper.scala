@@ -6,7 +6,6 @@ import java.io.{File, PrintWriter}
 
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse
 
-import scala.collection.JavaConverters._
 import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 
 // rules:
@@ -17,7 +16,7 @@ import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 
 
 // TODO add URL to github for test (at line number if possible)
-// TODO csw.services.config.server.ConfigServerTest is an abstract class. does this need special handling?
+// TODO csw.services.config.server.ConfigServiceTest is an abstract class. does this need special handling?
 // TODO $HOME/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
 
 object TestToStoryMapper {
@@ -39,6 +38,7 @@ object TestToStoryMapper {
 }
 
 class TestToStoryMapper(project: String, rootDir: String) {
+
   import TestToStoryMapper._
 
   private def recursiveListFiles(f: File): Array[File] = {
@@ -294,7 +294,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
   }
 
   def printSortedStoryToTestStringMap(storyToTestMap: Map[UserStoryReference, List[String]]): Unit = {
-    for ((t, s) <- storyToTestMap.toSeq.sortBy(_._1.reference.drop(9).toInt)) {
+    for ((t, s) <- storyToTestMap.toSeq.sortBy(_._1.  reference.drop(9).toInt)) {
       println(s"${t.reference}: ->")
       s.foreach(x => println(s"-- $x"))
     }
