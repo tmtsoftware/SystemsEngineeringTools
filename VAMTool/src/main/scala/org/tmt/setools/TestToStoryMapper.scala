@@ -14,17 +14,15 @@ import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 // if USR just above test (no lines between USR and test declaration), only applies to that test
 // if USR is within a test, it only applies to that test.
 
-
-// TODO add URL to github for test (at line number if possible)
 // TODO csw.services.config.server.ConfigServiceTest is an abstract class. does this need special handling?
 // TODO $HOME/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
 
 object TestToStoryMapper {
-  private val githubPath = "https://github.com/tmtsoftware"
-  private val delim = "\t"
-  private val header = s"path${delim}lineNumber${delim}githubLink${delim}className${delim}testName${delim}userStories"
+  private val githubPath    = "https://github.com/tmtsoftware"
+  private val delim         = "\t"
+  private val header        = s"path${delim}lineNumber${delim}githubLink${delim}className${delim}testName${delim}userStories"
   private val spreadsheetId = "1nykcRxvKTftgEYqAjUUErluaukBaUDZ3ybQQP9z-d7A"
-  private val range = "Sheet1"
+  private val range         = "Sheet1"
 
   type RefMap = ListMap[TestReference, Set[UserStoryReference]]
 
@@ -46,9 +44,8 @@ class TestToStoryMapper(project: String, rootDir: String) {
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-
   private val testFiles = {
-    val projectDir = new File(rootDir, project)
+    val projectDir  = new File(rootDir, project)
     val projectPath = projectDir.toPath
     recursiveListFiles(projectDir)
       .filter(_.isFile)
@@ -68,28 +65,30 @@ class TestToStoryMapper(project: String, rootDir: String) {
     val writer = new PrintWriter(file)
     writer.write(s"$header\n")
     for ((t, s) <- testMap) {
-      writer.write(s"${t.file.relativePath}$delim${t.lineNumber}$delim${getGithubLink(t)}$delim${t.packageName}$delim${t.className}$delim${t.testName}$delim[${s.map(_.reference).mkString(",")}]\n")
+      writer.write(
+        s"${t.file.relativePath}$delim${t.lineNumber}$delim${getGithubLink(t)}$delim${t.packageName}$delim${t.className}$delim${t.testName}$delim[${s.map(_.reference).mkString(",")}]\n")
     }
     writer.close()
   }
 
   def openCSV(testMapIn: RefMap, file: File): RefMap = {
     var testMap = testMapIn
-    val source = Source.fromFile(file)
+    val source  = Source.fromFile(file)
     for (line <- source.getLines()) {
       if (!line.startsWith(header) && (line.length > 0)) {
-        val parts = line.split(delim)
-        val file = new File(rootDir, parts(0))
+        val parts    = line.split(delim)
+        val file     = new File(rootDir, parts(0))
         val testFile = TestFile(parts(0), file.getCanonicalPath)
-        val testRef = TestReference(testFile,
+        val testRef = TestReference(
+          testFile,
           parts(3),
           parts(4),
           parts(5) // replace double quote with single quote, eliminate single quotes.  this artifact is created by excel, and may be removed.
             .replace("\"\"", "|")
             .replace("\"", "")
             .replace("|", "\""),
-          parts(1).toInt)
-
+          parts(1).toInt
+        )
 
         val userStories = {
           if (parts(5).contains("[]"))
@@ -110,10 +109,9 @@ class TestToStoryMapper(project: String, rootDir: String) {
     testMap
   }
 
-
   private def getDataFromSheets(testMapIn: RefMap): RefMap = {
     var testMap = testMapIn
-    val values = SheetsAccess.getAllData(spreadsheetId, range)
+    val values  = SheetsAccess.getAllData(spreadsheetId, range)
 
     if (values == null || values.isEmpty) {
       println("No data found")
@@ -122,14 +120,10 @@ class TestToStoryMapper(project: String, rootDir: String) {
       for (row <- values) {
         println(s"${row(3)} | ${row(4)} | ${row(5)}")
         if (row.mkString(delim) != header) {
-          val parts = row.map(_.toString)
-          val file = new File(rootDir, parts.head)
+          val parts    = row.map(_.toString)
+          val file     = new File(rootDir, parts.head)
           val testFile = TestFile(parts.head, file.getCanonicalPath)
-          val testRef = TestReference(testFile,
-            parts(2),
-            parts(3),
-            parts(4),
-            parts(1).toInt)
+          val testRef  = TestReference(testFile, parts(2), parts(3), parts(4), parts(1).toInt)
 
           val userStories = {
             if (parts(5).contains("[]"))
@@ -149,7 +143,6 @@ class TestToStoryMapper(project: String, rootDir: String) {
     testMap
   }
 
-
   private def addToMap(testMap: RefMap, testRef: Option[TestReference], storyRefs: Set[UserStoryReference]): RefMap = {
     val currentRefs = testMap.getOrElse(testRef.get, Set[UserStoryReference]())
     testMap + (testRef.get -> (storyRefs ++ currentRefs))
@@ -160,9 +153,9 @@ class TestToStoryMapper(project: String, rootDir: String) {
   }
 
   private[setools] def processScalaFile(testMapIn: RefMap, file: TestFile): RefMap = {
-    var testMap = testMapIn
-    var globalRefs = Set[UserStoryReference]()
-    var testRefs = Set[UserStoryReference]()
+    var testMap                                  = testMapIn
+    var globalRefs                               = Set[UserStoryReference]()
+    var testRefs                                 = Set[UserStoryReference]()
     var lastTestReference: Option[TestReference] = None
 
     def getClassName(line: String) = line.drop(6).takeWhile(_ != ' ')
@@ -173,10 +166,10 @@ class TestToStoryMapper(project: String, rootDir: String) {
 
     def getPackageName(line: String) = line.drop(8).takeWhile(_ != ' ')
 
-    val source = Source.fromFile(file.filename)
-    var className: Option[String] = None
+    val source                      = Source.fromFile(file.filename)
+    var className: Option[String]   = None
     var packageName: Option[String] = None
-    var lineNumber = 0
+    var lineNumber                  = 0
     for (line <- source.getLines()) {
       lineNumber += 1
       if (line.startsWith("package")) {
@@ -192,7 +185,8 @@ class TestToStoryMapper(project: String, rootDir: String) {
           testRefs += getReference(line)
         }
       } else if (line.dropWhile(_ == ' ').startsWith("test(\"")) {
-        lastTestReference = Some(TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
+        lastTestReference = Some(
+          TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
         testMap = addGlobalsToMap(testMap, lastTestReference, globalRefs)
         testMap = addToMap(testMap, lastTestReference, testRefs)
         testRefs = Set[UserStoryReference]()
@@ -208,11 +202,11 @@ class TestToStoryMapper(project: String, rootDir: String) {
   }
 
   private[setools] def processJavaFile(testMapIn: RefMap, file: TestFile): RefMap = {
-    var testMap = testMapIn
-    var globalRefs = Set[UserStoryReference]()
-    var testRefs = Set[UserStoryReference]()
+    var testMap                                  = testMapIn
+    var globalRefs                               = Set[UserStoryReference]()
+    var testRefs                                 = Set[UserStoryReference]()
     var lastTestReference: Option[TestReference] = None
-    var testStart = false
+    var testStart                                = false
 
     def getClassName(line: String) = line.drop(13).takeWhile(_ != ' ')
 
@@ -222,8 +216,8 @@ class TestToStoryMapper(project: String, rootDir: String) {
 
     def getPackageName(line: String) = line.drop(8).takeWhile(_ != ';')
 
-    val source = Source.fromFile(file.filename)
-    var className: Option[String] = None
+    val source                      = Source.fromFile(file.filename)
+    var className: Option[String]   = None
     var packageName: Option[String] = None
 
     var lineNumber = 0
@@ -244,7 +238,8 @@ class TestToStoryMapper(project: String, rootDir: String) {
       } else if (line.dropWhile(_ == ' ').startsWith("@Test")) {
         testStart = true
       } else if (testStart) {
-        lastTestReference = Some(TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
+        lastTestReference = Some(
+          TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
         testMap = addGlobalsToMap(testMap, lastTestReference, globalRefs)
         testMap = addToMap(testMap, lastTestReference, testRefs)
         testRefs = Set[UserStoryReference]()
@@ -262,15 +257,20 @@ class TestToStoryMapper(project: String, rootDir: String) {
 
   def updateMapFromSheets(): RefMap = {
     var testMap: RefMap = ListMap[TestReference, Set[UserStoryReference]]()
-    //getDataFromSheets()
-    //  openCSV(new File(s"$HOME/acceptTest/in.txt"))
     testFiles.filter(_.filename.endsWith(".scala")).foreach(f => testMap = processScalaFile(testMap, f))
     testFiles.filter(_.filename.endsWith(".java")).foreach(f => testMap = processJavaFile(testMap, f))
     testMap
   }
 
   private def makeSheetsData(testMap: RefMap): List[List[Any]] = {
-    testMap.toList.map(item => List(item._1.file.relativePath, item._1.lineNumber, getGithubLink(item._1), item._1.className, item._1.testName, s"[${item._2.map(_.reference).mkString(",")}]"))
+    testMap.toList.map(
+      item =>
+        List(item._1.file.relativePath,
+             item._1.lineNumber,
+             getGithubLink(item._1),
+             item._1.className,
+             item._1.testName,
+             s"[${item._2.map(_.reference).mkString(",")}]"))
   }
 
   def writeMapToSheets(testMap: RefMap): UpdateValuesResponse = {
@@ -278,7 +278,6 @@ class TestToStoryMapper(project: String, rootDir: String) {
     SheetsAccess.writeData(spreadsheetId, range, makeSheetsData(testMap))
   }
 
-  //  dumpCSV( new File(s"$HOME/acceptTest/test.csv"))
 
   def createStoryToTestMap(): Map[UserStoryReference, List[String]] = {
     val testMap = updateMapFromSheets()
@@ -294,7 +293,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
   }
 
   def printSortedStoryToTestStringMap(storyToTestMap: Map[UserStoryReference, List[String]]): Unit = {
-    for ((t, s) <- storyToTestMap.toSeq.sortBy(_._1.  reference.drop(9).toInt)) {
+    for ((t, s) <- storyToTestMap.toSeq.sortBy(_._1.reference.drop(9).toInt)) {
       println(s"${t.reference}: ->")
       s.foreach(x => println(s"-- $x"))
     }

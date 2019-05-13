@@ -6,18 +6,14 @@ import org.scalatest.{FunSuite, Matchers}
 class TestFile01 extends FunSuite with Matchers {
 
   // DEOPSCSW-003: fake story 3
-  test("should do it first") {
-
-  }
+  test("should do it first") {}
 
   // DEOPSCSW-004: fake story 4
   test("should do it second") {
 
-
     // DEOPSCSW-005: fake story 5
-    val n=5
+    val n = 5
     n shouldBe 5
   }
-
 
 }

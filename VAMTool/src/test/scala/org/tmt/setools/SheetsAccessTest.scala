@@ -4,7 +4,7 @@ import org.scalatest.{FunSuite, Matchers}
 
 class SheetsAccessTest extends FunSuite with Matchers {
   private val spreadsheetId = "1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc"
-  private val sheetIds = List("Logging Service - User Stories")
+  private val sheetIds      = List("Logging Service - User Stories")
 
   private val data = SheetsAccess.getAllData(spreadsheetId, sheetIds.head)
 

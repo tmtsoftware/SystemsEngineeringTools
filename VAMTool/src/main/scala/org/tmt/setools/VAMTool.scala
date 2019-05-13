@@ -1,14 +1,19 @@
 package org.tmt.setools
 
-import java.io.File
-
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import org.tmt.setools.Utilities.UserStoryReference
+
+import scala.concurrent.ExecutionContextExecutor
 
 object VAMTool extends App {
 
-  // TODO: Make these paths configurable
-  val HOME = System.getProperty("user.home")
-  val testResultsPath = s"$HOME/acceptTest/20190123_testReport.tsv"
+  implicit val system: ActorSystem             = ActorSystem()
+  implicit val ec: ExecutionContextExecutor    = system.dispatcher
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+
+  private val HOME      = System.getProperty("user.home")
+  val testResults = JenkinsWorkspace.getTestReports
   val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
 
   // list of Requirements
@@ -19,17 +24,15 @@ object VAMTool extends App {
 
   val storyToTestMap = testToStoryMapper.createStoryToTestMap()
   testToStoryMapper.printSortedStoryToTestStringMap(storyToTestMap)
-  val testToResultMap = TestResultParser.parseCSV(new File(testResultsPath))
+  val testToResultMap = TestResultParser.parseCSV(testResults)
   TestResultParser.print(testToResultMap)
 
   reqToStoryMap.foreach { req =>
     val stories = req._2
     stories.foreach { story =>
-      //println("Story:" + story)
       val tests = storyToTestMap.get(UserStoryReference(story))
       if (tests.isDefined) {
         tests.get.foreach { test =>
-          //println(s"test: $test")
           val pass = testToResultMap.get(test)
           if (pass.isDefined) {
             val passString = {
