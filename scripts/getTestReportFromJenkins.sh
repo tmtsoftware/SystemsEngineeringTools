@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Script to get test-reports.txt files for each module fro Jenkins (Not used: See the Scala code)
+
 wsRoot="http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/acceptance-dev-nightly-build/lastSuccessfulBuild/execution/node/3/ws"
 buildRoot="http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/acceptance-dev-nightly-build/lastSuccessfulBuild"
 

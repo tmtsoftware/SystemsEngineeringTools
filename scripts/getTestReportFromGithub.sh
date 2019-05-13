@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Note: Not used. See Scala code.
+
 # requires jq to parse JSON
 # jq: brew install jq
 
