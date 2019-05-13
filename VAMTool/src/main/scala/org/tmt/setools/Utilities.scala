@@ -20,6 +20,7 @@ object Utilities {
 
   case class TestReference(file: TestFile, packageName: String, className: String, testName: String, lineNumber: Int)
 
+  // Gets the contents of the given uri as a String or throws an exception if it fails.
   def httpGet(
       uri: String)(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
     val response = Await.result(Http(system).singleRequest(HttpRequest(HttpMethods.GET, uri)), 20.seconds)
