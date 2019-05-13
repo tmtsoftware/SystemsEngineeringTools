@@ -1,6 +1,6 @@
 package org.tmt.setools
 
-object utilities {
+object Utilities {
 
   case class Requirement(id: String, fullText: String, verifiedByTestSuite: Boolean)
 

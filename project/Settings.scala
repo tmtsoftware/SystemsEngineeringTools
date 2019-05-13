@@ -15,7 +15,6 @@ object Settings {
   )
 
   lazy val defaultSettings = buildSettings ++ Seq(
-    // compile options ScalaUnidoc, unidoc
     scalacOptions ++= Seq("-encoding", "UTF-8", "-feature", "-deprecation", "-unchecked"),
     javacOptions in(Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
   )

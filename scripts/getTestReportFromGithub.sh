@@ -6,16 +6,15 @@
 # test report is in tsv format
 
 # from the command line, the following works
-# curl -LO https://github.com/tmtsoftware/csw-acceptance/releases/download/v0.1-SNAPSHOT/test-reports.txt
+# curl -LO https://github.com/tmtsoftware/csw-acceptance/releases/download/$releaseTag/$reportFilename
 
 releaseTag="v0.1-SNAPSHOT"
 reportFilename="test-reports.txt"
 
 # get URL of test report
-URL=$( curl -s "https://api.github.com/repos/tmtsoftware/csw-acceptance/releases/tags/$releaseTag"  | jq -r ".assets[] | select(.name==\"${reportFilename}\") | .browser_download_url" )
-
+#URL=$( curl -s "https://api.github.com/repos/tmtsoftware/csw-acceptance/releases/tags/$releaseTag"  | jq -r ".assets[] | select(.name==\"${reportFilename}\") | .browser_download_url" )
+URL="https://github.com/tmtsoftware/csw-acceptance/releases/download/$releaseTag/$reportFilename"
 echo Dowloading $URL
 
 # download and save to tsv file
 curl -o csw-acceptance-test-report-${releaseTag}.tsv -L "$URL"
-

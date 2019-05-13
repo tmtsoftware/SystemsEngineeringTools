@@ -5,7 +5,7 @@ import Def.{setting => dep}
 object Dependencies {
 
   val Version = "0.1-SNAPSHOT"
-  val ScalaVersion = "2.12.4"
+  val ScalaVersion = "2.12.8"
 
   val `google-api-client` = "com.google.api-client" % "google-api-client" % "1.23.0"
   val `google-oauth-client` = "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0"
@@ -14,7 +14,7 @@ object Dependencies {
   val `scalatest-test` = "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
   object Akka {
-    val Version                    = "2.5.13" //all akka is Apache License 2.0
+    val Version                    = "2.5.22" //all akka is Apache License 2.0
     val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit" % Version
     val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
     val `akka-multi-node-testkit`  = "com.typesafe.akka" %% "akka-multi-node-testkit" % Version
@@ -23,7 +23,7 @@ object Dependencies {
   }
 
   object AkkaHttp {
-    val Version             = "10.1.3"
+    val Version             = "10.1.8"
     val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version //ApacheV2
     val `akka-http`         = "com.typesafe.akka" %% "akka-http" % Version
     val `spray-json`        = "com.typesafe.akka" %% "akka-http-spray-json" % Version

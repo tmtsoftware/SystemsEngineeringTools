@@ -2,15 +2,11 @@ package org.tmt.setools
 
 import org.scalatest.{FunSuite, Matchers}
 
-import scala.collection.JavaConverters._
-
 class SheetsAccessTest extends FunSuite with Matchers {
-  private val sheets = new SheetsAccess()
-
   private val spreadsheetId = "1n6-R5x4Br7NFJ219zCexHbE34DZFRZTtLkuhjtHJNEc"
   private val sheetIds = List("Logging Service - User Stories")
 
-  private val data = sheets.getAllDataScala(spreadsheetId, sheetIds.head)
+  private val data = SheetsAccess.getAllData(spreadsheetId, sheetIds.head)
 
   printData()
 
@@ -38,6 +34,6 @@ class SheetsAccessTest extends FunSuite with Matchers {
     reqs shouldBe Array("[REQ-2-CSW-3700]", "[REQ-2-CSW-3705]", "[REQ-2-CSW-3755]")
   }
 
-  def printData() = data.foreach(println)
+  private def printData(): Unit = data.foreach(println)
 
 }

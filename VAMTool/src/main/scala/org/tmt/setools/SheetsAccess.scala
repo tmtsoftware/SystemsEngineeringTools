@@ -1,7 +1,6 @@
 package org.tmt.setools
 
 import java.io.{File, IOException, InputStreamReader}
-import java.util
 
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
@@ -14,15 +13,13 @@ import com.google.api.services.sheets.v4.model._
 import com.google.api.services.sheets.v4.{Sheets, SheetsScopes}
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 /* https://developers.google.com/sheets/api/quickstart/java */
-class SheetsAccess {
+object SheetsAccess {
 
   private val APPLICATION_NAME = "Sheets Access Demo"
   private val JSON_FACTORY = JacksonFactory.getDefaultInstance
   private val CREDENTIALS_FOLDER = "credentials"
-
   private val HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport()
 
   /**
@@ -30,7 +27,7 @@ class SheetsAccess {
     * If modifying these scopes, delete your previously saved credentials/ folder.
     */
   private val SCOPES = List(SheetsScopes.SPREADSHEETS).asJava
-  private val CLIENT_SECRET_DIR = "/client_id.json"
+  private val CLIENT_ID_FILE = "/client_id.json"
 
 
   /**
@@ -41,7 +38,7 @@ class SheetsAccess {
     * @throws IOException If there is no client_secret.
     */
   private def getCredentials(httpTransport: NetHttpTransport) = {
-    val in = getClass.getResourceAsStream(CLIENT_SECRET_DIR)
+    val in = getClass.getResourceAsStream(CLIENT_ID_FILE)
     val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in))
     val flow = new GoogleAuthorizationCodeFlow.Builder(
       httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
@@ -56,13 +53,10 @@ class SheetsAccess {
     .setApplicationName(APPLICATION_NAME)
     .build()
 
-  def getAllDataScala(spreadsheetId: String, range: String): mutable.Buffer[mutable.Buffer[AnyRef]] =
-    getAllData(spreadsheetId, range).asScala.map(r => r.asScala)
-
-  def getAllData(spreadsheetId: String, range: String): util.List[util.List[AnyRef]] =
+  def getAllData(spreadsheetId: String, range: String): List[List[Any]] =
     service.spreadsheets().values()
       .get(spreadsheetId, range)
-      .execute.getValues
+      .execute.getValues.asScala.toList.map(_.asScala.toList)
 
 
   def clearData(spreadsheetId: String, range: String): ClearValuesResponse = {
@@ -73,7 +67,7 @@ class SheetsAccess {
   }
 
   def writeData(spreadsheetId: String, range: String, data: List[List[Any]]): UpdateValuesResponse = {
-    val javaData = data.map(_.map(_.asInstanceOf[AnyRef]).asJava).asJava
+    val javaData = data.map(_.map(_.asInstanceOf[Object]).asJava).asJava
     val body = new ValueRange().setValues(javaData)
     service.spreadsheets().values().update(spreadsheetId, range, body)
       .setValueInputOption("RAW")

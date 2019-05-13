@@ -2,23 +2,25 @@ package org.tmt.setools
 
 import java.io.File
 
-import org.tmt.setools.utilities.UserStoryReference
+import org.tmt.setools.Utilities.UserStoryReference
 
 object VAMTool extends App {
 
-  val allRequirements = VCRMParser.getRequirements()
+  // TODO: Make these paths configurable
   val HOME = System.getProperty("user.home")
-
   val testResultsPath = s"$HOME/acceptTest/20190123_testReport.tsv"
-  val testResultParser = new TestResultParser()
   val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
 
+  // list of Requirements
+  val allRequirements = VCRMParser.getRequirements()
+
+  // map of requirement id to set of user story ids
   val reqToStoryMap = VerificationMatrixParser.createMap()
 
   val storyToTestMap = testToStoryMapper.createStoryToTestMap()
   testToStoryMapper.printSortedStoryToTestStringMap(storyToTestMap)
-  val testToResultMap = testResultParser.parseCSV(new File(testResultsPath))
-  testResultParser.print(testToResultMap)
+  val testToResultMap = TestResultParser.parseCSV(new File(testResultsPath))
+  TestResultParser.print(testToResultMap)
 
   reqToStoryMap.foreach { req =>
     val stories = req._2
@@ -40,4 +42,5 @@ object VAMTool extends App {
       }
     }
   }
+  System.exit(0)
 }
