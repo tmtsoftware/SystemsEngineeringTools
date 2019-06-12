@@ -2,6 +2,7 @@ package org.tmt.setools
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
@@ -21,17 +22,23 @@ object Utilities {
   case class TestReference(file: TestFile, packageName: String, className: String, testName: String, lineNumber: Int)
 
   // Gets the contents of the given uri as a String or throws an exception if it fails.
-  def httpGet(
-      uri: String)(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
-    val response = Await.result(Http(system).singleRequest(HttpRequest(HttpMethods.GET, uri)), 20.seconds)
+  def httpGet(user: String, token: String, uri: String)(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
 
-    if (response.status.isFailure())
-      throw new RuntimeException(s"Error getting report from Jenkins: URI = $uri")
+    val authorization = Authorization(BasicHttpCredentials(user, token))
+
+    val headers = List(authorization)
+    val request = HttpRequest(HttpMethods.GET, uri, headers = headers)
+    val response = Await.result(Http(system).singleRequest(request), 20.seconds)
+
+    if (response.status.isFailure()) {
+      println(s"Error getting report from Jenkins: URI = $uri:\nrequest: $request\nresponse: $response")
+      System.exit(1)
+    }
 
     Await.result(response.entity.dataBytes
-                   .runWith(Sink.fold(ByteString.empty)(_ ++ _))
-                   .map(_.utf8String),
-                 5.seconds)
+      .runWith(Sink.fold(ByteString.empty)(_ ++ _))
+      .map(_.utf8String),
+      5.seconds)
   }
 
 }

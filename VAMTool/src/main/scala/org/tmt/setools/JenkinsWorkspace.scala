@@ -10,10 +10,10 @@ import scala.concurrent.ExecutionContextExecutor
   */
 object JenkinsWorkspace {
 
-  val server        = "ec2-35-154-215-191.ap-south-1.compute.amazonaws.com"
+  val server        = "54.212.217.224"
   val port          = 8080
-  val targetBuild   = "acceptance-dev-nightly-build"
-  val buildRoot     = s"http://$server:$port/job/$targetBuild/lastSuccessfulBuild"
+  val targetBuild   = "CSW%20Acceptance%20Pipeline/lastBuild"
+  val buildRoot     = s"http://$server:$port/job/$targetBuild"
   val workspaceRoot = s"$buildRoot/execution/node/3/ws"
 
   // csw modules that produce a test report
@@ -26,22 +26,24 @@ object JenkinsWorkspace {
     "config-client",
     "config-cli",
     "logging",
-    "framework",
-    "params",
-    "command-client",
-    "event-client",
-    "event-cli",
-    "alarm-api",
-    "alarm-client",
-    "alarm-cli",
-    "database",
-    "aas",
-    "time"
+//    "framework",
+//    "params",
+//    "command-client",
+//    "event-client",
+//    "event-cli",
+//    "alarm-api",
+//    "alarm-client",
+//    "alarm-cli",
+//    "database",
+//    "aas",
+//    "time"
   )
 
+  val testReportPath = "target/test-reports.txt"
+
   // Returns a single string containing all of the test reports.
-  def getTestReports(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
-    modules.map(m => Utilities.httpGet(s"$workspaceRoot/$m/target/test-reports.txt")).mkString("")
+  def getTestReports(user: String, token: String)(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
+    modules.map(m => Utilities.httpGet(user, token, s"$workspaceRoot/$m/$testReportPath")).mkString("")
   }
 
 }
