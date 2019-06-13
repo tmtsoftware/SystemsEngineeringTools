@@ -26,17 +26,17 @@ object JenkinsWorkspace {
     "config-client",
     "config-cli",
     "logging",
-//    "framework",
-//    "params",
-//    "command-client",
-//    "event-client",
-//    "event-cli",
-//    "alarm-api",
-//    "alarm-client",
-//    "alarm-cli",
-//    "database",
-//    "aas",
-//    "time"
+    "framework",
+    "params",
+    "command-client",
+    "event-client",
+    "event-cli",
+    "alarm-api",
+    "alarm-client",
+    "alarm-cli",
+    "database",
+    "aas",
+    "time"
   )
 
   val testReportPath = "target/test-reports.txt"
