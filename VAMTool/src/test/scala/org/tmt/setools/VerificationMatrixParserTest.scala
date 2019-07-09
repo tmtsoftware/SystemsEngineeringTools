@@ -1,7 +1,6 @@
 package org.tmt.setools
 
 import org.scalatest.{FunSuite, Matchers}
-import org.tmt.setools.VerificationMatrixParser.reqPattern
 
 class VerificationMatrixParserTest extends FunSuite with Matchers {
 

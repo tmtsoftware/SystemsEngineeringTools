@@ -30,7 +30,7 @@ object Utilities {
   case class TestReportResult(lineNumber: Int, passFail: Boolean)
 
   case class VAMEntry(jiraStoryID: String, userStoryText: String, requirementId: String, serviceName: String, testName: String, testReportLine: Int, testPassed: Boolean)  {
-    def testPassOrFail(): String = if (testPassed) "PASS" else "FAIL"
+    val testPassOrFail: String = if (testPassed) "PASS" else "FAIL"
   }
 
   // Gets the contents of the given uri as a String or throws an exception if it fails.

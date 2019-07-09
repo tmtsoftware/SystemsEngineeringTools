@@ -2,11 +2,9 @@ package org.tmt.setools
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import Utilities.UserStoryReference
-import Utilities.VAMEntry
+import org.tmt.setools.Utilities.VAMEntry
 
 import scala.collection.immutable.TreeMap
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContextExecutor
 
 object VAMTool extends App {
@@ -43,7 +41,7 @@ object VAMTool extends App {
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
 
   // list of Requirements (currently, this isn't used)
-  private val allRequirements = VCRMParser.getRequirements()
+  //private val allRequirements = VCRMParser.getRequirements()
 
   // map of requirement id to set of user story ids.  Store in TreeMap so it's sorted
   private val storyToReqMap = TreeMap(VerificationMatrixParser.createStoryToReqMap().toArray: _*)
