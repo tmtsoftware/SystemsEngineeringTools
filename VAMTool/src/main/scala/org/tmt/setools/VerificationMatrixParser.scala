@@ -26,8 +26,6 @@ object VerificationMatrixParser {
   private val iWantToColumnNum = iWantToColumn - 'A'
   private val soThatColumnNum  = soThatColumn - 'A'
 
-
-  // TODO: Add other sheet ids
   private val sheetIds = List(
     "Location Service",
     "Configuration Service",
@@ -42,54 +40,19 @@ object VerificationMatrixParser {
     "Database Service"
   )
 
+  def getReqs(row: List[Any]): Set[String] = row(reqColumnNum).toString.split("\n").flatMap(s => reqPattern.findFirstIn(s)).toSet
+  def getStory(row: List[Any]): String = storyPattern.findFirstIn(row(storyColumnNum).toString).getOrElse("")
+
   def createStoryToReqMap(spreadsheetId: String = spreadsheetId): Map[UserStory, Set[String]] = {
-    var storyToReqMap = Map[UserStory, Set[String]]()
-
-    sheetIds.foreach { sheet =>
-      val data = SheetsAccess.getAllData(spreadsheetId, sheet)
-      data
+    sheetIds.flatMap { sheet =>
+      SheetsAccess
+        .getAllData(spreadsheetId, sheet)
         .filter(_.size >= validRowSize)
-        .foreach { row =>
-          val reqStrings = row(reqColumnNum).toString.split("\n").toSet
-          val reqs = reqStrings.flatMap(s => reqPattern.findFirstIn(s))
-          val story = storyPattern.findFirstIn(row(storyColumnNum).toString).getOrElse("")
-          if (story.nonEmpty) {
-            if (reqs.nonEmpty) {
-              storyToReqMap = storyToReqMap + (UserStory(UserStoryReference(story), sheet, row(asAColumnNum).toString, row(iWantToColumnNum).toString, row(soThatColumnNum).toString) -> reqs)
-            }
-          }
+        .filter(getReqs(_).nonEmpty)
+        .filter(getStory(_).nonEmpty)
+        .map { row =>
+          UserStory(UserStoryReference(getStory(row)), sheet, row(asAColumnNum).toString, row(iWantToColumnNum).toString, row(soThatColumnNum).toString) -> getReqs(row)
         }
-    }
-    storyToReqMap
+    }.toMap
   }
-
-  /**
-   * Returns a map requirement id to set of user story ids.
-   * For example: Map("[REQ-2-CSW-3795]" -> Set("DEOPSCSW-145", "DEOPSCSW-146", "DEOPSCSW-147"), ...)
-   */
-  def createReqToStoryMap(spreadsheetId: String = spreadsheetId): Map[String, Set[String]] = {
-    var reqToStoryMap = Map[String, Set[String]]()
-
-    sheetIds.foreach { sheet =>
-      val data = SheetsAccess.getAllData(spreadsheetId, sheet)
-      data
-        .filter(_.size >= validRowSize)
-        .foreach { row =>
-          val reqStrings = row(reqColumnNum).toString.split("\n")
-          val reqs       = reqStrings.flatMap(s => reqPattern.findFirstIn(s))
-          val story      = storyPattern.findFirstIn(row(storyColumnNum).toString).getOrElse("")
-          if (story.nonEmpty) {
-            reqs.foreach { r =>
-              if (reqToStoryMap.contains(r)) {
-                reqToStoryMap = reqToStoryMap + (r -> (reqToStoryMap(r) + story))
-              } else {
-                reqToStoryMap = reqToStoryMap + (r -> Set(story))
-              }
-            }
-          }
-        }
-    }
-    reqToStoryMap
-  }
-
 }

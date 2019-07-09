@@ -27,8 +27,8 @@ object VAMTool extends App {
    K: Test pass/fail
   */
 
-  implicit val system: ActorSystem             = ActorSystem()
-  implicit val ec: ExecutionContextExecutor    = system.dispatcher
+  implicit val system: ActorSystem = ActorSystem()
+  implicit val ec: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   private val config = system.settings.config
@@ -39,14 +39,14 @@ object VAMTool extends App {
   private val jenkinsUser = config.getString("jenkins.user")
   private val jenkinsToken = config.getString("jenkins.token")
 
-  private val HOME      = System.getProperty("user.home")
+  private val HOME = System.getProperty("user.home")
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
 
   // list of Requirements (currently, this isn't used)
   private val allRequirements = VCRMParser.getRequirements()
 
   // map of requirement id to set of user story ids.  Store in TreeMap so it's sorted
-  private val storyToReqMap = TreeMap(VerificationMatrixParser.createStoryToReqMap().toArray:_*)
+  private val storyToReqMap = TreeMap(VerificationMatrixParser.createStoryToReqMap().toArray: _*)
 
   private val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
   private val storyToTestMap = testToStoryMapper.createStoryToTestMap()
@@ -55,19 +55,20 @@ object VAMTool extends App {
   private val testToResultMap = TestResultParser.parseCSV(testResults)
   TestResultParser.print(testToResultMap)
 
-  private var vamEntries = ListBuffer[Utilities.VAMEntry]()
-
-  storyToReqMap.foreach { item =>
-    val tests = storyToTestMap.get(item._1.reference)
-    if (tests.isDefined) {
-      tests.get.foreach { test =>
-        val pass = testToResultMap.get(test)
-        if (pass.isDefined) {
-          vamEntries += VAMEntry(item._1.reference.reference, item._1.getText, item._2.mkString(","), item._1.service, test, pass.get.lineNumber, pass.get.passFail)
-        }
-      }
-    }
-  }
+  val vamEntries = storyToReqMap.flatMap {
+    case (story, req) =>
+      storyToTestMap
+        .get(story.reference)
+        .map(tests =>
+          tests.flatMap(test =>
+            testToResultMap
+              .get(test)
+              .map(result =>
+                VAMEntry(story.reference.reference, story.getText, req.mkString(","), story.service, test, result.lineNumber, result.passFail))
+          )
+        )
+  }.flatten
+    .toList
 
   vamEntries.foreach(x => println(s"${x.jiraStoryID} | ${x.userStoryText} | ${x.requirementId} | ${x.serviceName} | ${x.testName} | ${x.testReportLine} | ${x.testPassOrFail}"))
 

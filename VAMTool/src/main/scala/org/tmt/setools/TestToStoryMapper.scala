@@ -16,6 +16,7 @@ import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
 
 // TODO csw.services.config.server.ConfigServiceTest is an abstract class. does this need special handling?
 // TODO $HOME/tmtsoftware/csw/csw-alarm/csw-alarm-client/src/test/scala/csw/alarm/client/internal/services/SeverityServiceModuleTest.scala
+// TODO $HOME/tmtsoftware/csw/csw-event/csw-event-client/src/test/scala/csw/event/client/EventSubscriberTest.scala
 
 object TestToStoryMapper {
   private val githubPath    = "https://github.com/tmtsoftware"
