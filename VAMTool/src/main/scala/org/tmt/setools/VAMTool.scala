@@ -2,11 +2,30 @@ package org.tmt.setools
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import org.tmt.setools.Utilities.UserStoryReference
+import Utilities.UserStoryReference
+import Utilities.VAMEntry
 
+import scala.collection.immutable.TreeMap
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContextExecutor
 
 object VAMTool extends App {
+
+  /*
+   output should be a table with following columns:
+
+   A: Absolute Number (blank)
+   B: JIRA Story ID
+   C: VA Name (blank)
+   D: User Story text (as a _, i want to _, so that _)
+   E: VA Method ("M")
+   F: VA Milestone ("PSR")
+   G: Requirement IDs (no brackets or text, comma-delimited)
+   H: Category (Service Name)
+   I: Test name
+   J: Link to test report (DCC link) and line number
+   K: Test pass/fail
+  */
 
   implicit val system: ActorSystem             = ActorSystem()
   implicit val ec: ExecutionContextExecutor    = system.dispatcher
@@ -22,36 +41,35 @@ object VAMTool extends App {
 
   private val HOME      = System.getProperty("user.home")
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
-  private val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
 
-  // list of Requirements
+  // list of Requirements (currently, this isn't used)
   private val allRequirements = VCRMParser.getRequirements()
 
-  // map of requirement id to set of user story ids
-  private val reqToStoryMap = VerificationMatrixParser.createMap()
+  // map of requirement id to set of user story ids.  Store in TreeMap so it's sorted
+  private val storyToReqMap = TreeMap(VerificationMatrixParser.createStoryToReqMap().toArray:_*)
 
+  private val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
   private val storyToTestMap = testToStoryMapper.createStoryToTestMap()
+
   testToStoryMapper.printSortedStoryToTestStringMap(storyToTestMap)
   private val testToResultMap = TestResultParser.parseCSV(testResults)
   TestResultParser.print(testToResultMap)
 
-  reqToStoryMap.foreach { req =>
-    val stories = req._2
-    stories.foreach { story =>
-      val tests = storyToTestMap.get(UserStoryReference(story))
-      if (tests.isDefined) {
-        tests.get.foreach { test =>
-          val pass = testToResultMap.get(test)
-          if (pass.isDefined) {
-            val passString = {
-              if (pass.get) "PASSED" else "FAILED"
-            }
+  private var vamEntries = ListBuffer[Utilities.VAMEntry]()
 
-            println(req._1 + "|" + story + "|" + test + "|" + passString)
-          }
+  storyToReqMap.foreach { item =>
+    val tests = storyToTestMap.get(item._1.reference)
+    if (tests.isDefined) {
+      tests.get.foreach { test =>
+        val pass = testToResultMap.get(test)
+        if (pass.isDefined) {
+          vamEntries += VAMEntry(item._1.reference.reference, item._1.getText, item._2.mkString(","), item._1.service, test, pass.get.lineNumber, pass.get.passFail)
         }
       }
     }
   }
+
+  vamEntries.foreach(x => println(s"${x.jiraStoryID} | ${x.userStoryText} | ${x.requirementId} | ${x.serviceName} | ${x.testName} | ${x.testReportLine} | ${x.testPassOrFail}"))
+
   System.exit(0)
 }

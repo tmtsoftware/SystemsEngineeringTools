@@ -19,7 +19,17 @@ object Utilities {
 
   case class UserStoryReference(reference: String)
 
+  case class UserStory(reference: UserStoryReference, service: String, asA: String, iWantTo: String, soThat: String) extends Ordered[UserStory] {
+    def getText = s"As a/an $asA, I want to $iWantTo so that $soThat"
+    private def getNumber = reference.reference.drop(9).toInt
+    def compare(that: UserStory): Int = this.getNumber - that.getNumber
+  }
+
   case class TestReference(file: TestFile, packageName: String, className: String, testName: String, lineNumber: Int)
+
+  case class TestReportResult(lineNumber: Int, passFail: Boolean)
+
+  case class VAMEntry(jiraStoryID: String, userStoryText: String, requirementId: String, serviceName: String, testName: String, testReportLine: Int, testPassOrFail: Boolean)
 
   // Gets the contents of the given uri as a String or throws an exception if it fails.
   def httpGet(user: String, token: String, uri: String)(implicit system: ActorSystem,
