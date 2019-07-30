@@ -282,7 +282,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
 
   def createStoryToTestMap(): Map[UserStoryReference, List[String]] = {
     val testMap = updateMapFromSheets()
-    val tempMap = testMap.toList.flatMap { case (a, b) => b.map(_ -> a) }.groupBy(_._1).mapValues(_.map(_._2))
+    val tempMap = Utilities.invertMap(testMap)
     tempMap.map { case (a, b) => a -> b.map(ref => ref.packageName + "." + ref.className + "." + ref.testName) }
   }
 
