@@ -1,6 +1,6 @@
 package org.tmt.setools
 
-import org.tmt.setools.Utilities.{UserStory, UserStoryReference}
+import org.tmt.setools.Utilities.{Requirement, UserStory, UserStoryReference}
 
 import scala.util.matching.Regex
 
@@ -53,6 +53,14 @@ object VerificationMatrixParser {
         .map { row =>
           UserStory(UserStoryReference(getStory(row)), sheet, row(asAColumnNum).toString, row(iWantToColumnNum).toString, row(soThatColumnNum).toString) -> getReqs(row)
         }
+    }.toMap
+  }
+
+  def createReqToStoryMap(allReqs: List[Requirement], matrixSheetId: String = spreadsheetId): Map[Requirement, List[UserStory]] = {
+    val storyToReqMap = createStoryToReqMap()
+    val partialReqToStoryMap = Utilities.invertMap(storyToReqMap)
+    allReqs.map { req =>
+      req -> partialReqToStoryMap.getOrElse(req.id, List(UserStory.none))
     }.toMap
   }
 }
