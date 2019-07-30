@@ -1,5 +1,7 @@
 package org.tmt.setools
 
+import java.io.{File, PrintWriter}
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
@@ -43,7 +45,12 @@ object JenkinsWorkspace {
 
   // Returns a single string containing all of the test reports.
   def getTestReports(user: String, token: String)(implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContextExecutor): String = {
-    modules.map(m => Utilities.httpGet(user, token, s"$workspaceRoot/$m/$testReportPath")).mkString("")
+    modules.map(m => s"$m\n${Utilities.httpGet(user, token, s"$workspaceRoot/$m/$testReportPath")}").mkString("")
   }
 
+  def writeTestReportToFile(file: File, report: String): Unit = {
+    val writer = new PrintWriter(file)
+    writer.write(report)
+    writer.close()
+  }
 }
