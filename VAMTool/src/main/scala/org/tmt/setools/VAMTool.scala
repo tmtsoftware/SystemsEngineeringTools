@@ -1,5 +1,7 @@
 package org.tmt.setools
 
+import java.io.File
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.tmt.setools.Utilities.VAMEntry
@@ -38,7 +40,10 @@ object VAMTool extends App {
   private val jenkinsToken = config.getString("jenkins.token")
 
   private val HOME = System.getProperty("user.home")
+  private val reportFile = new File("/tmp/testReport.tsv")
+
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
+  JenkinsWorkspace.writeTestReportToFile(reportFile, testResults)
 
   // list of Requirements (currently, this isn't used)
   //private val allRequirements = VCRMParser.getRequirements()
@@ -71,4 +76,7 @@ object VAMTool extends App {
   vamEntries.foreach(x => println(s"${x.jiraStoryID} | ${x.userStoryText} | ${x.requirementId} | ${x.serviceName} | ${x.testName} | ${x.testReportLine} | ${x.testPassOrFail}"))
 
   System.exit(0)
+
+
+
 }
