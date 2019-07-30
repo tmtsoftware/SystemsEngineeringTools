@@ -25,12 +25,25 @@ object Utilities {
     def compare(that: UserStory): Int = this.getNumber - that.getNumber
   }
 
+  object UserStory {
+    val none = UserStory(UserStoryReference("none"), "none", "none", "none", "none")
+  }
+
   case class TestReference(file: TestFile, packageName: String, className: String, testName: String, lineNumber: Int)
 
   case class TestReportResult(lineNumber: Int, passFail: Boolean)
 
   case class VAMEntry(jiraStoryID: String, userStoryText: String, requirementId: String, serviceName: String, testName: String, testReportLine: Int, testPassed: Boolean)  {
     val testPassOrFail: String = if (testPassed) "PASS" else "FAIL"
+  }
+
+  def invertMap[A,B](map: Map[A,Iterable[B]]): Map[B, List[A]] = {
+    map
+      .toList
+      .flatMap
+        { case (a, b) => b.map(_ -> a) }
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
   }
 
   // Gets the contents of the given uri as a String or throws an exception if it fails.
