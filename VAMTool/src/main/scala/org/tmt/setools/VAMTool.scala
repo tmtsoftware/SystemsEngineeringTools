@@ -1,6 +1,6 @@
 package org.tmt.setools
 
-import java.io.File
+import java.io.{File, PrintWriter}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -40,10 +40,18 @@ object VAMTool extends App {
   private val jenkinsToken = config.getString("jenkins.token")
 
   private val HOME = System.getProperty("user.home")
-  private val reportFile = new File("/tmp/testReport.tsv")
 
+  private val vamHeader = "JIRA Story ID\tUser Story\tVA Method\tVA Milestone\tRequirement IDs\tCategory\tTest name\tLink to Test report link and line number\tTest pass/fail\n"
+
+
+  private val extraTestLinkageFile = new File(s"$HOME/Desktop/TMT OSW/CSW/CSWMissingTestToStoryLinkage.txt")
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
-  JenkinsWorkspace.writeTestReportToFile(reportFile, testResults)
+  private val testResultsLink = "https://docushare.tmt.org/docushare/dsweb/Get/Document-79591/TestReport_CSW_v1.0.0-RC2_20190816.tsv"
+
+  // This is commented because the file was manually created using JenkinsWorkspaceTest "should download reports and write to file"
+  // and then manually uploaded to docushare.  This can be done automatically if the DCC uploading is figured out.
+//  private val reportFile = new File("/tmp/testReport.tsv")
+//  JenkinsWorkspace.writeTestReportToFile(reportFile, testResults)
 
   // list of Requirements (currently, this isn't used)
   //private val allRequirements = VCRMParser.getRequirements()
@@ -52,28 +60,49 @@ object VAMTool extends App {
   private val storyToReqMap = TreeMap(VerificationMatrixParser.createStoryToReqMap().toArray: _*)
 
   private val testToStoryMapper = new TestToStoryMapper("csw", s"$HOME/tmtsoftware")
-  private val storyToTestMap = testToStoryMapper.createStoryToTestMap()
+  private val storyToTestMap = testToStoryMapper.createStoryToTestMap(Some(extraTestLinkageFile))
 
   testToStoryMapper.printSortedStoryToTestStringMap(storyToTestMap)
   private val testToResultMap = TestResultParser.parseCSV(testResults)
   TestResultParser.print(testToResultMap)
 
+  // create entries with all user stories that have tests
   val vamEntries = storyToReqMap.flatMap {
     case (story, req) =>
       storyToTestMap
-        .get(story.reference)
-        .map(tests =>
-          tests.flatMap(test =>
-            testToResultMap
-              .get(test)
-              .map(result =>
-                VAMEntry(story.reference.reference, story.getText, req.mkString(","), story.service, test, result.lineNumber, result.passFail))
-          )
+        .getOrElse(story.reference, List("none"))
+        .map(test =>
+          testToResultMap
+            .get(test) match {
+            case Some(result) =>
+              VAMEntry(story.reference.reference, story.getText, req.mkString(", "), story.service, test, s"$testResultsLink ${result.lineNumber}", Some(result.passFail))
+            case None =>
+              VAMEntry(story.reference.reference, story.getText, req.mkString(", "), story.service, test, "", None)
+          }
         )
-  }.flatten
-    .toList
+  }.toList
 
-  vamEntries.foreach(x => println(s"${x.jiraStoryID} | ${x.userStoryText} | ${x.requirementId} | ${x.serviceName} | ${x.testName} | ${x.testReportLine} | ${x.testPassOrFail}"))
+  // add entries for requirements not covered by testing, with empty data, to be filled in by hand later
+  val allReqs = DRDParser.getRequirements()
+  val reqToStoryMap = VerificationMatrixParser.createReqToStoryMap(allReqs)
+  val sortedKeys = reqToStoryMap.keys.toList.sortBy(_.id)
+  val extraVamEntries =
+    for {
+      req <- sortedKeys
+      if !vamEntries.exists(entry => entry.requirementId.contains(req.id))
+    } yield {
+      VAMEntry(req.id)
+    }
+
+  val allEntries = vamEntries ++ extraVamEntries
+
+  allEntries.foreach(_.print())
+
+  val vamFile = new File("/tmp/vam.txt")
+  val writer = new PrintWriter(vamFile)
+  writer.write(vamHeader)
+  allEntries.foreach(_.write(writer))
+  writer.close()
 
   System.exit(0)
 
