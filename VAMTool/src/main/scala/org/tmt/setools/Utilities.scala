@@ -1,5 +1,7 @@
 package org.tmt.setools
 
+import java.io.PrintWriter
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers._
@@ -33,8 +35,24 @@ object Utilities {
 
   case class TestReportResult(lineNumber: Int, passFail: Boolean)
 
-  case class VAMEntry(jiraStoryID: String, userStoryText: String, requirementId: String, serviceName: String, testName: String, testReportLine: Int, testPassed: Boolean)  {
-    val testPassOrFail: String = if (testPassed) "PASS" else "FAIL"
+  case class VAMEntry(jiraStoryID: String, userStoryText: String, requirementId: String, serviceName: String, testName: String, testReportLine: String, testPassed: Option[Boolean]) {
+    val testPassOrFail: String = testPassed match {
+      case Some(b) => if (b) "PASS" else "FAIL"
+      case None => "NONE"
+    }
+    private val testType = if (testPassed.isDefined) "M" else "I"
+    def toString(delim: String) = s"$jiraStoryID$delim$userStoryText$delim$testType${delim}PSR$delim$requirementId$delim$serviceName$delim$testName$delim${endString(delim)}"
+    def toStringRep(delim: String) = s"${rep(jiraStoryID)}$delim${rep(userStoryText)}$delim$testType${delim}PSR$delim${rep(requirementId)}$delim${rep(serviceName)}$delim${rep(testName)}$delim${rep(testReportLine)}$delim$testPassOrFail"
+    def print(): Unit = println(toStringRep(" | "))
+    def write(writer: PrintWriter): Unit = writer.write(s"${toString("\t")}\n")
+    private def rep(s: String) = if (s.isEmpty) "none" else s
+    private def endString(delim: String) = if (testReportLine.isEmpty) delim else s"$testReportLine$delim$testPassOrFail"
+  }
+
+  object VAMEntry {
+    def apply(requirementId: String): VAMEntry = {
+      VAMEntry("", "", requirementId, "", "", "", testPassed = None )
+    }
   }
 
   def invertMap[A,B](map: Map[A,Iterable[B]]): Map[B, List[A]] = {
