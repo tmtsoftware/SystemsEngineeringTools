@@ -51,7 +51,7 @@ object VerificationMatrixParser {
         .filter(getReqs(_).nonEmpty)
         .filter(getStory(_).nonEmpty)
         .map { row =>
-          UserStory(UserStoryReference(getStory(row)), sheet, row(asAColumnNum).toString, row(iWantToColumnNum).toString, row(soThatColumnNum).toString) -> getReqs(row)
+          UserStory(UserStoryReference(getStory(row)), sheet, row(asAColumnNum).toString.trim, row(iWantToColumnNum).toString.trim, row(soThatColumnNum).toString.trim) -> getReqs(row)
         }
     }.toMap
   }
