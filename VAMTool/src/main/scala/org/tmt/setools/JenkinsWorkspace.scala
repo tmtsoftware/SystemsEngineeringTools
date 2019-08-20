@@ -16,7 +16,7 @@ object JenkinsWorkspace {
   val port          = 8080
   val targetBuild   = "CSW%20Acceptance%20Pipeline/lastBuild"
   val buildRoot     = s"http://$server:$port/job/$targetBuild"
-  val workspaceRoot = s"$buildRoot/execution/node/3/ws"
+  val workspaceRoot = s"$buildRoot/execution/node/5/ws"
 
   // csw modules that produce a test report
   val modules = List(
