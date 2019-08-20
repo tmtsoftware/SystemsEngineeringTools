@@ -110,6 +110,44 @@ class TestToStoryMapper(project: String, rootDir: String) {
     testMap
   }
 
+  def updateMapWithExtraLinkageFromFile(testMapIn: RefMap, file: File): RefMap = {
+    val fileSource = Source.fromFile(file)
+    val map = updateMapWithExtraLinkageFromList(testMapIn, fileSource.getLines())
+    fileSource.close
+    map
+  }
+
+  def updateMapWithExtraLinkageFromList(testMapIn: RefMap, data: Iterator[String]): RefMap = {
+    def matchTestRef(testRef: TestReference, packageName: String, className: String, testName: String) =
+      testRef.packageName == packageName && testRef.className == className && testRef.testName == testName
+    var testMap = testMapIn
+    for (line <- data) {
+      val parts = line.split(delim)
+      if (parts.length == 5) {
+        val (packageName, dotClassName) = parts(2).splitAt(parts(2).lastIndexOf("."))
+        val className = dotClassName.drop(1)
+        val testName = parts(3)
+        val userStoryRefs = parts(4)
+          .split(",")
+          .map(_.trim)
+          .map(_.replace("\"", ""))
+          .map(UserStoryReference)
+          .toSet
+
+        val maybeMapping = testMap.find(item => matchTestRef(item._1, packageName, className, testName))
+        if (maybeMapping.isDefined) {
+          testMap = addToMap(testMap, Some(maybeMapping.get._1), userStoryRefs)
+        } else {
+          val file = new File(rootDir, parts(0))
+          val testFile = TestFile(parts(0), file.getCanonicalPath)
+          val lineNumber = parts(1).toInt
+          testMap = addToMap(testMap, Some(TestReference(testFile, packageName, className, testName, lineNumber)), userStoryRefs)
+        }
+      }
+    }
+    testMap
+  }
+
   private def getDataFromSheets(testMapIn: RefMap): RefMap = {
     var testMap = testMapIn
     val values  = SheetsAccess.getAllData(spreadsheetId, range)
@@ -280,8 +318,12 @@ class TestToStoryMapper(project: String, rootDir: String) {
   }
 
 
-  def createStoryToTestMap(): Map[UserStoryReference, List[String]] = {
-    val testMap = updateMapFromSheets()
+  def createStoryToTestMap(extraFile: Option[File]): Map[UserStoryReference, List[String]] = {
+    val testMap = if (extraFile.isDefined) {
+      updateMapWithExtraLinkageFromFile(updateMapFromSheets(), extraFile.get)
+    } else {
+      updateMapFromSheets()
+    }
     val tempMap = Utilities.invertMap(testMap)
     tempMap.map { case (a, b) => a -> b.map(ref => ref.packageName + "." + ref.className + "." + ref.testName) }
   }
