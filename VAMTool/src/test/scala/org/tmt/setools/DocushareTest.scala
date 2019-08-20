@@ -1,5 +1,8 @@
 package org.tmt.setools
 
+import java.io.File
+
+import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.{FunSuite, Matchers}
 
 class DocushareTest extends FunSuite with Matchers {
@@ -32,4 +35,37 @@ class DocushareTest extends FunSuite with Matchers {
   test("login") {
     docushare.login()
   }
+
+  test("should login and publish file") {
+    val user = sys.env.getOrElse("DCCUSER", "")
+    val pw = sys.env.getOrElse("DCCPW", "")
+    val collection = 24009
+    val file = new File("/Users/Weiss/Desktop/testReportFile5.tsv")
+    val packageName = "CSW"
+    val version = 0.7f
+    val author = "Jason Weiss"
+    val testNumber="1234"
+
+    docushare.login(user, pw) match {
+      case Some(cookies) =>
+        cookies.size shouldBe 2
+        docushare.publish(cookies, collection, file, packageName, version, author, testNumber) shouldBe StatusCodes.OK
+      case _ => fail
+    }
+
+  }
+
+  test("should login and publish file manual cookies") {
+    val collection = 24009
+    val file = new File("/Users/Weiss/Desktop/testReportFile5.tsv")
+    val packageName = "CSW"
+    val version = 0.7f
+    val author = "Jason Weiss"
+    val testNumber="1234"
+    val cookies = Seq()
+
+    docushare.publish(cookies, collection, file, packageName, version, author, testNumber) shouldBe StatusCodes.OK
+
+  }
+
 }
