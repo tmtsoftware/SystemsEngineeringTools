@@ -43,11 +43,12 @@ object Utilities {
       case None => "NONE"
     }
     private val testType = if (testPassed.isDefined) "M" else "I"
-    def toString(delim: String) = s"$jiraStoryID$delim$userStoryText$delim$testType${delim}PSR$delim$requirementId$delim$serviceName$delim$testName$delim${endString(delim)}"
+    def toString(delim: String) = s"$jiraStoryID$delim${blk(userStoryText)}$delim$testType${delim}PSR$delim$requirementId$delim$serviceName$delim$testName$delim${endString(delim)}"
     def toStringRep(delim: String) = s"${rep(jiraStoryID)}$delim${rep(userStoryText)}$delim$testType${delim}PSR$delim${rep(requirementId)}$delim${rep(serviceName)}$delim${rep(testName)}$delim${rep(testReportLine)}$delim$testPassOrFail"
     def print(): Unit = println(toStringRep(" | "))
     def write(writer: PrintWriter): Unit = writer.write(s"${toString("\t")}\n")
     private def rep(s: String) = if (s.isEmpty) "none" else s
+    private def blk(s: String) = if (s.contains("\n")) "\""+ s+ "\"" else s
     private def endString(delim: String) = if (testReportLine.isEmpty) delim else s"$testReportLine$delim$testPassOrFail"
   }
 
