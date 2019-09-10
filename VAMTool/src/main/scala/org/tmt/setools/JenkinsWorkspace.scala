@@ -20,24 +20,19 @@ object JenkinsWorkspace {
 
   // csw modules that produce a test report
   val modules = List(
-    "admin-server",
-    "location-server",
-    "location-agent",
-    "config-server",
-    "config-api",
-    "config-client",
-    "config-cli",
-    "logging",
-    "framework",
-    "params",
-    "command-client",
-    "event-client",
-    "event-cli",
-    "alarm-api",
-    "alarm-client",
-    "alarm-cli",
-    "database",
     "aas",
+    "admin-server",
+    "alarm",
+    "command",
+    "config",
+    "database",
+    "event",
+    "framework",
+    "location",
+    "logging",
+    "network-utils",
+    "params",
+    "testkit",
     "time"
   )
 
