@@ -44,9 +44,9 @@ object VAMTool extends App {
   private val vamHeader = "JIRA Story ID\tUser Story\tVA Method\tVA Milestone\tRequirement IDs\tCategory\tTest name\tLink to Test report link and line number\tTest pass/fail\n"
 
 
-  private val extraTestLinkageFile = new File(s"$HOME/Desktop/TMT OSW/CSW/CSWMissingTestToStoryLinkage.txt")
+  private val extraTestLinkageFile = new File(s"$HOME/Desktop/CSW Verification/CSWMissingTestToStoryLinkage.txt")
   private val testResults = JenkinsWorkspace.getTestReports(jenkinsUser, jenkinsToken)
-  private val testResultsLink = "https://docushare.tmt.org/docushare/dsweb/Get/Document-79591/TestReport_CSW_v1.0.0-RC2_20190816.tsv"
+  private val testResultsLink = "https://docushare.tmt.org/docushare/dsweb/Get/Document-79767/TestReport_CSW_v1.0.0-RC4_20190828_final.txt"
 
   // This is commented because the file was manually created using JenkinsWorkspaceTest "should download reports and write to file"
   // and then manually uploaded to docushare.  This can be done automatically if the DCC uploading is figured out.
