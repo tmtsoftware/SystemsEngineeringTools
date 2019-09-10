@@ -3,7 +3,7 @@ package org.tmt.setools
 import scala.io.Source
 import scala.collection.immutable.{ListMap, Set}
 import java.io.{File, PrintWriter}
-
+import util.control.Breaks._
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse
 
 import org.tmt.setools.Utilities.{TestFile, TestReference, UserStoryReference}
@@ -24,6 +24,7 @@ object TestToStoryMapper {
   private val header        = s"path${delim}lineNumber${delim}githubLink${delim}className${delim}testName${delim}userStories"
   private val spreadsheetId = "1nykcRxvKTftgEYqAjUUErluaukBaUDZ3ybQQP9z-d7A"
   private val range         = "Sheet1"
+  private val excludeList = List("LocationServiceCompTest.scala", "server/ConfigServiceTest.scala")
 
   type RefMap = ListMap[TestReference, Set[UserStoryReference]]
 
@@ -34,6 +35,9 @@ object TestToStoryMapper {
     }
   }
 
+  def isNotExcluded(f: File): Boolean = {
+    !excludeList.map(f.getPath.contains(_)).foldLeft(false)(_ || _)
+  }
 }
 
 class TestToStoryMapper(project: String, rootDir: String) {
@@ -50,7 +54,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
     val projectPath = projectDir.toPath
     recursiveListFiles(projectDir)
       .filter(_.isFile)
-      .filter(f => f.getPath.contains("/test/scala") || f.getPath.contains("/test/java") || f.getPath.contains("/multi-jvm"))
+      .filter(f => (f.getPath.contains("/test/scala") || f.getPath.contains("/test/java") || f.getPath.contains("/multi-jvm")) && isNotExcluded(f))
       .map(f => TestFile(projectPath.relativize(f.toPath).toString, f.getCanonicalPath))
   }
 
@@ -126,7 +130,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
       if (parts.length == 5) {
         val (packageName, dotClassName) = parts(2).splitAt(parts(2).lastIndexOf("."))
         val className = dotClassName.drop(1)
-        val testName = parts(3)
+        val testName = parts(3).replace("\"", "")  // import adds quotes if contains a comma
         val userStoryRefs = parts(4)
           .split(",")
           .map(_.trim)
@@ -197,11 +201,11 @@ class TestToStoryMapper(project: String, rootDir: String) {
     var testRefs                                 = Set[UserStoryReference]()
     var lastTestReference: Option[TestReference] = None
 
-    def getClassName(line: String) = line.drop(6).takeWhile(_ != ' ')
+    def getClassName(line: String) = line.drop(6).takeWhile(c => (c != ' ') && (c != '('))
 
     def getAbstractClassName(line: String) = line.drop(15).takeWhile(_ != ' ')
 
-    def getTestName(line: String) = line.drop(line.indexOf("test(") + 6).takeWhile(_ != '"')
+    def getTestName(line: String) = line.drop(line.indexOf("test(") + 6).takeWhile(_ != '"').trim.replace("\\", "")
 
     def getPackageName(line: String) = line.drop(8).takeWhile(_ != ' ')
 
@@ -247,7 +251,7 @@ class TestToStoryMapper(project: String, rootDir: String) {
     var lastTestReference: Option[TestReference] = None
     var testStart                                = false
 
-    def getClassName(line: String) = line.drop(13).takeWhile(_ != ' ')
+    def getClassName(line: String) = line.drop(13).takeWhile(c => (c != ' ') && (c != '('))
 
     def getAbstractClassName(line: String) = line.drop(22).takeWhile(_ != ' ')
 
@@ -260,33 +264,37 @@ class TestToStoryMapper(project: String, rootDir: String) {
     var packageName: Option[String] = None
 
     var lineNumber = 0
-    for (line <- source.getLines()) {
-      lineNumber += 1
-      if (line.startsWith("package")) {
-        packageName = Some(getPackageName(line))
-      } else if (line.startsWith("public class")) {
-        className = Some(getClassName(line))
-      } else if (line.startsWith("public abstract class")) {
-        className = Some(getAbstractClassName(line))
-      } else if (line.contains("DEOPSCSW")) {
-        if (className.isEmpty) {
-          globalRefs += getReference(line)
-        } else {
-          testRefs += getReference(line)
-        }
-      } else if (line.dropWhile(_ == ' ').startsWith("@Test")) {
-        testStart = true
-      } else if (testStart) {
-        lastTestReference = Some(
-          TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
-        testMap = addGlobalsToMap(testMap, lastTestReference, globalRefs)
-        testMap = addToMap(testMap, lastTestReference, testRefs)
-        testRefs = Set[UserStoryReference]()
-        testStart = false
-      } else {
-        if (lastTestReference.isDefined) {
+    breakable {
+      for (line <- source.getLines()) {
+        lineNumber += 1
+        if (line.startsWith("package")) {
+          packageName = Some(getPackageName(line))
+        } else if (line.startsWith("public class")) {
+          if (line.contains("TestNGSuite"))
+            break
+          className = Some(getClassName(line))
+        } else if (line.startsWith("public abstract class")) {
+          className = Some(getAbstractClassName(line))
+        } else if (line.contains("DEOPSCSW")) {
+          if (className.isEmpty) {
+            globalRefs += getReference(line)
+          } else {
+            testRefs += getReference(line)
+          }
+        } else if (line.dropWhile(_ == ' ').startsWith("@Test")) {
+          testStart = true
+        } else if (testStart) {
+          lastTestReference = Some(
+            TestReference(file, packageName.getOrElse(""), className.getOrElse("None"), getTestName(line), lineNumber))
+          testMap = addGlobalsToMap(testMap, lastTestReference, globalRefs)
           testMap = addToMap(testMap, lastTestReference, testRefs)
           testRefs = Set[UserStoryReference]()
+          testStart = false
+        } else {
+          if (lastTestReference.isDefined) {
+            testMap = addToMap(testMap, lastTestReference, testRefs)
+            testRefs = Set[UserStoryReference]()
+          }
         }
       }
     }
