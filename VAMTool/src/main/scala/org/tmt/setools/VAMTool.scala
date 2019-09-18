@@ -4,7 +4,7 @@ import java.io.{File, PrintWriter}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import org.tmt.setools.Utilities.VAMEntry
+import org.tmt.setools.Utilities.{UserStoryReference, VAMEntry}
 
 import scala.collection.immutable.TreeMap
 import scala.concurrent.ExecutionContextExecutor
@@ -66,6 +66,8 @@ object VAMTool extends App {
   private val testToResultMap = TestResultParser.parseCSV(testResults)
   TestResultParser.print(testToResultMap)
 
+  def reqSetToString(reqs: Set[String]) = if (reqs.isEmpty) "Architectural Design Choice" else reqs.mkString(", ")
+
   // create entries with all user stories that have tests
   val vamEntries = storyToReqMap.flatMap {
     case (story, req) =>
@@ -75,9 +77,9 @@ object VAMTool extends App {
           testToResultMap
             .get(test) match {
             case Some(result) =>
-              VAMEntry(story.reference.reference, story.getText, req.mkString(", "), story.service, test, s"$testResultsLink ${result.lineNumber}", Some(result.passFail))
+              VAMEntry(story.reference.reference, story.getText, reqSetToString(req), story.service, test, s"$testResultsLink ${result.lineNumber}", Some(result.passFail))
             case None =>
-              VAMEntry(story.reference.reference, story.getText, req.mkString(", "), story.service, test, "", None)
+              VAMEntry(story.reference.reference, story.getText, reqSetToString(req), story.service, test, "", None)
           }
         )
   }.toList

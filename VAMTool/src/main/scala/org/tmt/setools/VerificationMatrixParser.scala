@@ -48,8 +48,7 @@ object VerificationMatrixParser {
       SheetsAccess
         .getAllData(spreadsheetId, sheet)
         .filter(_.size >= validRowSize)
-        .filter(getReqs(_).nonEmpty)
-        .filter(getStory(_).nonEmpty)
+        .filter(getStory(_).startsWith("DEOPSCSW-"))
         .map { row =>
           UserStory(UserStoryReference(getStory(row)), sheet, row(asAColumnNum).toString.trim, row(iWantToColumnNum).toString.trim, row(soThatColumnNum).toString.trim) -> getReqs(row)
         }

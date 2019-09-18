@@ -10,6 +10,7 @@ class VerificationMatrixParserTest extends FunSuite with Matchers {
     val map = VerificationMatrixParser.createStoryToReqMap()
 
     map.toList.sortBy(_._1).foreach {
+//      map.toList.foreach {
       case (s, r) => println(s"${s.reference.reference} -> ${r.mkString(",")}")
     }
     println(s"map size = ${map.size}")
